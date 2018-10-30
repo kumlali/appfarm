@@ -1,0 +1,112 @@
+################################################################################
+# WARNING: If you use Dropwizard, remove dropwizard. prefix of this file.
+################################################################################
+###
+# Dropwizard application configuration
+#
+# 'Instance specific' configuration, such as port and log file path, can be
+# provided by JVM options for each instance. JVM options can be added to 
+# farm.conf's CONF_JAVA_OPTS and application arguments can be added to 
+# farm.conf's CONF_APP_ARGS. Instance specific variables, such as INSTANCE_NAME, 
+# APPLICATION_PORT and ADMIN_PORT, can be used in CONF_JAVA_OPTS and 
+# CONF_APP_ARGS. Therefore, it is possible to define instance specific 
+# configuration in <domain>.properties files that will later be added to 
+# farm.conf while deployment package creation.
+#
+# Configuration settings can be overriden by passing special Java system
+# properties when starting your application. Overrides must start with prefix 
+# dw., followed by the path to the configuration value being 
+# overridden: https://bit.ly/2RYaOia. Therefore, configuration 
+# can be overriden by adding -D arguments to CONF_JAVA_OPTS in farm.conf. For 
+# example, https port of the application and required keystore & truststore can 
+# be overriden as follows:
+#
+#   CONF_JAVA_OPTS= ...
+#                  -Ddw.server.applicationConnectors[0].port=${APPLICATION_PORT} \
+#                  -Ddw.server.applicationConnectors[0].keyStorePath=${CONF_APP_HOME}/certs/keystore.jks \
+#                  -Ddw.server.applicationConnectors[0].trustStorePath=${CONF_APP_HOME}/certs/truststore.jks \
+#
+# On the other hand, Dropwizard takes the first command line argument and 
+# dispatches it to a matching command. In this case, the only command 
+# available is server, which runs your application as an HTTP server. 
+# The server command requires a configuration file (see https://bit.ly/2J1qSfg) 
+# that you can add to CONF_APP_ARGS inf farm.conf:
+#
+#   CONF_APP_ARGS=server ${CONF_APP_HOME}/conf/config.yml
+#
+# 'Domain specific' configuration, such as database configuration, can be
+# provided in this file directly. Also, placeholders(e.g. @myVariable@) can also 
+# be used. While creating node.zip by Ant script (e.g. 'ant -Ddomain=dev create-node-pack')
+# placeholders are replaced with the value of relevant variable 
+# (e.g. myVariable) in <domain>.properties file.
+################################################################################
+
+accountServiceRestApiUrl: @accountServiceRestApiUrl@
+statisticsServiceRestApiUrl: @statisticsServiceRestApiUrl@
+notificationServiceRestApiUrl: @notificationServiceRestApiUrl@
+
+server:
+  applicationConnectors:
+    - type: https
+      port:  <set -Ddw.server.applicationConnectors[0].port JVM option>
+      maxRequestHeaderSize: 64KiB
+      keyStorePath: <set -Ddw.server.applicationConnectors[0].keyStorePath JVM option>
+      keyStorePassword: @server.application.https.keyStorePassword@
+      # TODO: Do we need trustStore* when we set validateCerts to false?
+      trustStorePath: <set -Ddw.server.applicationConnectors[0].trustStorePath JVM option>
+      trustStorePassword: @server.application.https.trustStorePassword@
+      validatePeers: false
+      validateCerts: false
+  adminConnectors:
+    - type: https
+      port: <set -Ddw.server.adminConnectors[0].port JVM option>
+      keyStorePath: <set -Ddw.server.adminConnectors[0].keyStorePath JVM option>
+      keyStorePassword: @server.admin.https.keyStorePassword@
+      # TODO: Do we need trustStore* when we set validateCerts to false?
+      trustStorePath: <set -Ddw.server.adminConnectors[0].trustStorePath JVM option>
+      trustStorePassword: @server.admin.https.trustStorePassword@
+      validatePeers: false
+      validateCerts: false
+
+database:
+  driverClass: @database.driverClass@
+  url: @database.url@
+  user: @database.user@
+  password: @database.password@
+  validationQuery: "@database.validationQuery@"
+
+logging:
+
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: INFO
+
+  # Logger-specific levels.
+  loggers:
+
+    # Sets the level for 'com.example.app' to DEBUG.
+    com.mycompany.myproject: INFO
+
+    # Redirects SQL logs to a separate file
+    org.hibernate.SQL:
+      level: INFO
+
+  appenders:
+    # Rolling file appender
+    - type: file
+      threshold: INFO
+      currentLogFilename: <set -Ddw.logging.appenders[0].currentLogFilename JVM option>
+      maxFileSize: 10MB
+      archive: true
+      archivedFileCount: 5
+      archivedLogFilenamePattern: <set -Ddw.logging.appenders[0].archivedLogFilenamePattern JVM option>
+      timeZone: UTC+3
+      logFormat: '%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - tid: %X{tid} %X{code} %msg %n'
+    - type: gelf
+      threshold: INFO
+      logFormat: '%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - tid: %X{tid} %X{code} %msg %n'
+      host: @logging.appenders.gelf.host@
+      port: @logging.appenders.gelf.port@
+      originHost: <set -Ddw.logging.appenders[1].originHost JVM option>
+      facility: @logging.appenders.gelf.facility@
+      additionalFields: {'application':'@CONF_APP_NAME@', 
+                         'domain':'@CONF_DOMAIN_NAME@'}

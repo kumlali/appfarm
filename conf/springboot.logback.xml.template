@@ -1,0 +1,50 @@
+<!--
+WARNING: If you use Springboot, remove springboot. prefix of this file.
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!--  
+    Rolling file appender. Default maxFileSize is 10MB: https://bit.ly/2Rp4G2c
+
+    More info:
+    * Configure Logback for File-only Output: https://bit.ly/2IC2iRO
+    * file-appender.xml: https://bit.ly/2Rp4G2c
+  -->
+  <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+  <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}/}spring.log}"/>
+  <include resource="org/springframework/boot/logging/logback/file-appender.xml" />
+
+  <!--
+    osiegmar/logback-gelf: https://github.com/osiegmar/logback-gelf
+  -->
+  <appender name="GELF" class="de.siegmar.logbackgelf.GelfUdpAppender">
+    <graylogHost>@logging.appenders.gelf.host@</graylogHost>
+    <graylogPort>@logging.appenders.gelf.port@</graylogPort>
+    <useCompression>true</useCompression>
+    <layout class="de.siegmar.logbackgelf.GelfLayout">
+        <originHost>${logging.appenders.gelf.originHost}</originHost>
+        <includeRawMessage>false</includeRawMessage>
+        <includeMarker>true</includeMarker>
+        <includeMdcData>true</includeMdcData>
+        <includeCallerData>false</includeCallerData>
+        <includeRootCauseData>false</includeRootCauseData>
+        <includeLevelName>false</includeLevelName>
+        <shortPatternLayout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%m%nopex</pattern>
+        </shortPatternLayout>
+        <fullPatternLayout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%m</pattern>
+        </fullPatternLayout>
+        <staticField>instanceName:${instanceName}</staticField>
+        <staticField>facility:@logging.appenders.gelf.facility@</staticField>
+        <staticField>domain:@CONF_DOMAIN_NAME@</staticField>
+        <staticField>application:@CONF_APP_NAME@</staticField>
+    </layout>
+  </appender>
+
+  <root level="INFO">
+    <appender-ref ref="GELF" />
+    <appender-ref ref="FILE" />
+  </root>
+
+</configuration>

@@ -1,0 +1,69 @@
+################################################################################
+# WARNING: If you use Springboot, remove springboot. prefix of this file.
+################################################################################
+# Springboot application configuration.
+#
+# 'Instance specific' configuration, such as port and log file path, can be
+# provided by JVM options or application arguments for each instance.
+# JVM options can be added to farm.conf's CONF_JAVA_OPTS and application
+# arguments can be added to farm.conf's CONF_APP_ARGS. Instance
+# specific variables, such as INSTANCE_NAME, APPLICATION_PORT and ADMIN_PORT,
+# can be used in CONF_JAVA_OPTS and CONF_APP_ARGS. Therefore, it is possible
+# to define instance specific configuration in <domain>.properties files that 
+# will later be added to farm.conf while deployment package creation.
+#
+# Spring Boot makes -D arguments available as properties accessible from a 
+# Spring Environment instance: https://bit.ly/2J0L94r. Therefore, configuration 
+# can be overriden by adding -D arguments to CONF_JAVA_OPTS in farm.conf. For 
+# example, to override https port of the application, -Dserver.port=<port> can 
+# be added:
+#
+#   CONF_JAVA_OPTS=-Dserver.port=${APPLICATION_PORT} \
+#                  -Dlogging.config=${CONF_APP_HOME}/conf/logback.xml \
+#                  -Dlogging.file=${CONF_APP_HOME}/instances/${INSTANCE_NAME}/logs/${INSTANCE_NAME}.log 
+#
+# On the other hand, by default, SpringApplication converts any command line 
+# option arguments (that is, arguments starting with --, such as 
+# --server.port=9000) to a property and adds them to the Spring Environment. 
+# Command line properties always take precedence over other property sources: 
+# https://bit.ly/2PCmKVu. Therefore, configuration can be overriden by adding 
+# -- arguments to CONF_APP_ARGS in farm.conf. For example, to override https 
+# port of the application, --server.port=<port> can be added:
+#
+#   CONF_APP_ARGS=--server.port=${APPLICATION_PORT} \
+#                 --spring.config.location=${CONF_APP_HOME}/conf/
+#
+# 'Domain specific' configuration, such as database configuration, can be
+# provided in this file directly. Also, placeholders(e.g. @myVariable@) can also 
+# be used. While creating node.zip by Ant script (e.g. 'ant -Ddomain=dev create-node-pack')
+# placeholders are replaced with the value of relevant variable 
+# (e.g. myVariable) in <domain>.properties file.
+################################################################################
+
+accountServiceRestApiUrl: @accountServiceRestApiUrl@
+statisticsServiceRestApiUrl: @statisticsServiceRestApiUrl@
+notificationServiceRestApiUrl: @notificationServiceRestApiUrl@
+
+server:
+  port: <set -Dserver.port JVM option or --server.port argument>
+  ssl:
+    enabled: true
+    protocol: TLS
+    enabled-protocols: TLSv1.1,TLSv1.2
+    key-store: <set -Dserver.ssl.key-store JVM option or --server.ssl.key-store argument>
+    key-store-password: @server.application.https.keyStorePassword@
+    key-store-type: jks
+    trust-store: <set -Dserver.ssl.trust-store JVM option or --server.ssl.trust-store argument>
+    trust-store-password: @server.application.https.trustStorePassword@
+    trust-store-type: jks
+
+spring:
+  datasource:
+    driver-class-name: @database.driverClass@
+    url: @database.url@
+    username: @database.user@
+    password: @database.password@
+
+# Use logback.xml for advanced logging options like rolling file appender.
+#
+# logging:
