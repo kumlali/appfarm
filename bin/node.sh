@@ -196,7 +196,7 @@ deploy () {
        \n\nPlease note that ${CONF_APP_HOME}/bin has not been overriden. If you\
        \nneed to upgrade scripts by overriding them with the ones in 'bin' \
        \ndirectory of 'node.zip', please issue following command:\
-       \n\n'unzip -o ${CONF_APP_HOME}/deploy/latest/node.zip bin/* -d ${CONF_APP_HOME}'
+       \n\n'unzip -o ${CONF_APP_HOME}/deploy/latest/node.zip bin/* -d ${CONF_APP_HOME}; chmod +x ${CONF_APP_HOME}/bin/*'
        \n"
 
   # Deploy instance components
